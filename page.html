@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leaders Academia Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,system-ui,sans-serif;background:#f4f6fb;color:#1e293b}
+.wrap{max-width:860px;margin:0 auto;padding:16px;height:100dvh;display:flex;flex-direction:column}
+header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:22px 26px;border-radius:20px;
+ box-shadow:0 10px 30px rgba(79,70,229,.25);margin-bottom:12px}
+header h1{margin:0;font-size:1.5rem}header p{margin:6px 0 0;opacity:.92;font-size:.92rem}
+.tags span{display:inline-block;background:rgba(255,255,255,.18);padding:3px 11px;border-radius:999px;margin:10px 7px 0 0;font-size:.75rem}
+#chat{flex:1;overflow-y:auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 2px 14px rgba(15,23,42,.06);
+ display:flex;flex-direction:column;gap:10px}
+.m{max-width:82%;padding:10px 14px;border-radius:16px;line-height:1.5;font-size:.93rem;word-wrap:break-word}
+.bot{background:#eef0fb;align-self:flex-start;border-bottom-left-radius:4px}
+.user{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 2px}
+.chips button{border:1px solid #c7d2fe;background:#fff;color:#4338ca;border-radius:999px;padding:6px 13px;font:inherit;font-size:.8rem;cursor:pointer}
+.chips button:hover{background:#eef2ff}
+.bar{display:flex;gap:8px;margin-top:10px}
+.bar input{flex:1;border:1px solid #d6dbe8;border-radius:14px;padding:13px 16px;font:inherit;font-size:.93rem;outline:none;background:#fff}
+.bar input:focus{border-color:#6366f1}
+.bar button{border:0;border-radius:14px;padding:0 22px;font:inherit;font-weight:600;color:#fff;cursor:pointer;
+ background:linear-gradient(135deg,#4f46e5,#7c3aed)}.bar button:disabled{opacity:.55;cursor:default}
+.dots i{display:inline-block;width:7px;height:7px;margin:0 2px;background:#818cf8;border-radius:50%;animation:b 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes b{0%,80%,100%{transform:scale(.6);opacity:.5}40%{transform:scale(1);opacity:1}}
+</style></head><body><div class="wrap">
+<header><h1>🎓 Leaders Academia Assistant</h1>
+<p>Ask me about courses, fees, instructors, certificates and admissions.</p>
+<div class="tags"><span>Live Classes</span><span>Expert Trainers</span><span>Certificates</span><span>Career Guidance</span></div></header>
+<div id="chat"></div>
+<div class="chips" id="chips"></div>
+<div class="bar"><input id="msg" placeholder="Type your question here..." autocomplete="off" maxlength="800">
+<button id="send">Send</button></div></div>
+<script>
+const chat=document.getElementById('chat'),input=document.getElementById('msg'),btn=document.getElementById('send');
+let history=[],busy=false;
+function fmt(t){t=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ t=t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');t=t.replace(/^\s*[-*]\s+/gm,'• ');return t.replace(/\n/g,'<br>');}
+function add(role,html){const d=document.createElement('div');d.className='m '+role;d.innerHTML=html;
+ chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d;}
+async function send(text){text=(text||input.value).trim();if(!text||busy)return;
+ input.value='';busy=true;btn.disabled=true;document.getElementById('chips').style.display='none';
+ add('user',fmt(text));const t=add('bot','<span class="dots"><i></i><i></i><i></i></span>');
+ let reply;
+ try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({message:text,history:history.slice(-6)})});
+  reply=(await r.json()).reply||'Sorry, something went wrong. Please try again.';}
+ catch(e){reply='Sorry, I could not connect. Please try again in a moment.';}
+ t.innerHTML=fmt(reply);chat.scrollTop=chat.scrollHeight;
+ history.push({role:'user',content:text},{role:'assistant',content:reply});
+ busy=false;btn.disabled=false;input.focus();}
+btn.onclick=()=>send();input.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+add('bot',fmt('Assalam-o-Alaikum! 👋 I can help with courses, fees, instructors, certificates and admissions. What would you like to know?'));
+['Which courses are you offering?','Which course is best for beginners?','What are the payment methods?','Is there a scholarship?',
+ 'Web development ki fees kitni hai?'].forEach(q=>{const b=document.createElement('button');b.textContent=q;b.onclick=()=>send(q);
+ document.getElementById('chips').appendChild(b);});
+</script></body></html>
